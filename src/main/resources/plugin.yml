@@ -1,0 +1,6 @@
+name: ARCEffectAPI
+version: '1.0.0-SNAPSHOT'
+main: kr.arcadia.arcEffectAPI.ARCEffectAPI
+api-version: '1.21'
+load: STARTUP
+depend: [ ARCCore ]
