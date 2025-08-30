@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "2.1.21"
     id("com.gradleup.shadow") version "8.3.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.18"
 }
 
 group = "kr.arcadia"
@@ -15,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.21.8-R0.1-SNAPSHOT")
     compileOnly(files("src/main/kotlin/kr/arcadia/arcEffectAPI/libs/ARCCore-1.0.0.jar"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 }

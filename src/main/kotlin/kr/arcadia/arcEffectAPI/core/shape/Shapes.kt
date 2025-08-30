@@ -5,6 +5,15 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 object Shapes {
+    fun line(start: Vector, end: Vector, samples: Int) = PointGenerator { _, _ ->
+        val dir = end.clone().subtract(start)
+        (0..samples).map { i ->
+            val t = i.toDouble() / samples
+            start.clone().add(dir.clone().multiply(t))
+        }
+
+    }
+
     fun circle(radius: Double, samples: Int) = PointGenerator { _, _ ->
         (0..samples).map { i ->
             val a = 2 * Math.PI * i / samples

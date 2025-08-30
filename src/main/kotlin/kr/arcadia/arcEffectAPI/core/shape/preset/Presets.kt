@@ -8,8 +8,8 @@ import kr.arcadia.arcEffectAPI.core.particle.ParticleContext
 import kr.arcadia.arcEffectAPI.core.particle.ParticleParams
 import kr.arcadia.arcEffectAPI.core.shape.Shapes
 import org.bukkit.Color
-import org.bukkit.Location
 import org.bukkit.Particle
+import org.bukkit.entity.Entity
 import org.bukkit.util.Vector
 import kotlin.math.PI
 import kotlin.math.cos
@@ -17,7 +17,7 @@ import kotlin.math.sin
 
 object Presets {
 
-    fun ringPulse(ctx: ParticleContext, center: ()-> Location, radius: Double, secs: Double) =
+    fun ringPulse(ctx: ParticleContext, center: Entity, radius: Double, secs: Double) =
         ParticleEffect.builder()
             .context(ctx)
             .origin(center)
@@ -36,7 +36,7 @@ object Presets {
             .timeline(Timeline(durationTicks = (secs*20).toInt(), easing = Easings.linear, loop = false))
             .build()
 
-    fun spiralAscend(ctx: ParticleContext, center: () -> Location, height: Double, turns: Int, samples: Int) =
+    fun spiralAscend(ctx: ParticleContext, center: Entity, height: Double, turns: Int, samples: Int) =
         ParticleEffect.builder()
             .context(ctx)
             .origin(center)

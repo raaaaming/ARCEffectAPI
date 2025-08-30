@@ -1,5 +1,6 @@
 package kr.arcadia.arcEffectAPI.core.particle
 
+import kr.arcadia.arcEffectAPI.core.effect.ViewerFilter
 import kr.arcadia.arcEffectAPI.core.particle.policy.BatchPolicy
 import kr.arcadia.arcEffectAPI.core.particle.policy.LodPolicy
 import org.bukkit.World

@@ -14,27 +14,32 @@ import kr.arcadia.arcEffectAPI.core.effect.ParticleEffect
 import kr.arcadia.arcEffectAPI.core.engine.DefaultParticleEngine
 import kr.arcadia.arcEffectAPI.core.particle.ParticleContext
 import kr.arcadia.arcEffectAPI.core.particle.ParticleParams
-import kr.arcadia.arcEffectAPI.core.particle.ViewerFilter
+import kr.arcadia.arcEffectAPI.core.effect.ViewerFilter
+import kr.arcadia.arcEffectAPI.core.engine.DefaultEntityEngine
 import kr.arcadia.arcEffectAPI.core.particle.policy.BatchPolicy
 import kr.arcadia.arcEffectAPI.core.particle.policy.LodPolicy
+import kr.arcadia.arcEffectAPI.core.shape.Mobs
 import kr.arcadia.arcEffectAPI.core.shape.Shapes
 import kr.arcadia.arcEffectAPI.core.shape.preset.Presets
 import kr.arcadia.core.bukkit.ARCCoreBukkitPlugin
 import org.bukkit.Color
 import org.bukkit.Particle
+import org.bukkit.entity.Entity
+import org.bukkit.entity.Player
+import org.bukkit.event.Listener
 import org.bukkit.util.Vector
 import java.util.concurrent.CompletableFuture
-import kotlin.math.PI
-import kotlin.math.cos
 import kotlin.math.sin
 
-class ARCEffectAPI : ARCCoreBukkitPlugin() {
+class ARCEffectAPI : ARCCoreBukkitPlugin(), Listener {
 
-    lateinit var engine: DefaultParticleEngine
+    lateinit var particleEngine: DefaultParticleEngine
+    lateinit var entityEngine: DefaultEntityEngine
 
     override fun onPreEnable() {
         super.onPreEnable()
-        engine = DefaultParticleEngine(this)
+        particleEngine = DefaultParticleEngine(this)
+        entityEngine = DefaultEntityEngine(this)
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { command ->
             command.registrar().register(buildCommand)
         }
@@ -44,7 +49,7 @@ class ARCEffectAPI : ARCCoreBukkitPlugin() {
         .then(Commands.literal("play")
             .then(Commands.argument("shape", StringArgumentType.string())
                 .suggests { ctx, builder -> CompletableFuture.supplyAsync {
-                    arrayOf("ring", "spiral").forEach { builder.suggest(it) }
+                    arrayOf("ring", "spiral", "circle", "test").forEach { builder.suggest(it) }
                     return@supplyAsync builder.build()
                 }}
                 .executes { ctx ->
@@ -56,11 +61,11 @@ class ARCEffectAPI : ARCCoreBukkitPlugin() {
                             Presets.ringPulse(
                                 ctx = ParticleContext(
                                     world = location.world,
-                                    viewers = ViewerFilter.Radius(location, 32.0),
-                                    lod = LodPolicy.DistanceScale(location, listOf(16.0 to 1.0, 32.0 to 0.6, 48.0 to 0.35)),
+                                    viewers = ViewerFilter.Radius(source.sender as Entity, 32.0),
+                                    lod = LodPolicy.DistanceScale(source.sender as Entity, listOf(16.0 to 1.0, 32.0 to 0.6, 48.0 to 0.35)),
                                     batch = BatchPolicy.Auto,
                                 ),
-                                center = { location },
+                                center = source.sender as Entity,
                                 radius = 3.0,
                                 secs = 20.0,
                             )
@@ -70,7 +75,7 @@ class ARCEffectAPI : ARCCoreBukkitPlugin() {
                                 ctx = ParticleContext(
                                     world = location.world
                                 ),
-                                center = { location.add(0.0, 1.7, 0.0) },
+                                center = source.sender as Entity,
                                 height = 4.0,
                                 turns = 3,
                                 samples = 180,
@@ -80,12 +85,37 @@ class ARCEffectAPI : ARCCoreBukkitPlugin() {
                             ParticleEffect.builder()
                                 .context(ParticleContext(
                                     world = location.world,
-                                    viewers = ViewerFilter.Radius(location, 32.0),
-                                    lod = LodPolicy.DistanceScale(location, listOf(16.0 to 1.0, 32.0 to 0.6, 48.0 to 0.35)),
+                                    viewers = ViewerFilter.Radius(source.sender as Entity, 32.0),
+                                    lod = LodPolicy.DistanceScale(source.sender as Entity, listOf(16.0 to 1.0, 32.0 to 0.6, 48.0 to 0.35)),
                                     batch = BatchPolicy.Auto,
                                 ))
-                                .origin(location::clone)
+                                .origin(source.sender as Entity)
                                 .shape(Shapes.circle(2.0, 96))
+                                .transform(Transform(
+                                    translate = {_, _, _ -> Vector(0, 0, 0)},
+                                    scale = {_, _, _ -> Vector(1, 1, 1)},
+                                    rotate = {_, _ -> Vector(0, 0, 0)},
+                                ))
+                                .particle(ParticleParams(
+                                    type = Particle.DUST,
+                                    count = 1,
+                                    color = Color.fromRGB(255, 80, 80),
+                                    size = 1.5f,
+                                ))
+                                .timeline(Timeline(durationTicks = 40, easing = Easings.linear, loop = true))
+                                .build()
+                        }
+                        "test" -> {
+                            ParticleEffect.builder()
+                                .origin(source.sender as Entity)
+                                .context(ParticleContext(
+                                    world = location.world,
+                                    viewers = ViewerFilter.Radius(source.sender as Entity, 32.0),
+                                    lod = LodPolicy.DistanceScale(source.sender as Entity, listOf(16.0 to 1.0, 32.0 to 0.6, 48.0 to 0.35)),
+                                    batch = BatchPolicy.Auto,
+                                ))
+                                .shape(Shapes.line(Vector(0, 0, 0), Vector(2, 2, 2), 32))
+                                .offset(Vector(0, 0, 0))
                                 .transform(Transform(
                                     translate = {_, _, _ -> Vector(0, 0, 0)},
                                     scale = {_, _, _ -> Vector(1, 1, 1)},
@@ -97,13 +127,13 @@ class ARCEffectAPI : ARCCoreBukkitPlugin() {
                                     color = Color.fromRGB(255, 80, 80),
                                     size = 1.5f
                                 ))
-                                .timeline(Timeline(durationTicks = 40, easing = Easings.linear, loop = true))
+                                .timeline(Timeline(durationTicks = 100, loop = false, easing = Easings.linear))
                                 .build()
                         }
                         else -> null
                     }
                     if(preset == null) return@executes Command.SINGLE_SUCCESS
-                    val h = engine.play(preset)
+                    val h = particleEngine.play(preset)
                     return@executes Command.SINGLE_SUCCESS
                 }
             )
@@ -113,11 +143,40 @@ class ARCEffectAPI : ARCCoreBukkitPlugin() {
                 (0..360).forEach { logger.info("${sin(Math.toRadians(it.toDouble()))}") }
                 return@executes Command.SINGLE_SUCCESS
             }
+        ).then(Commands.literal("summon")
+            .executes { ctx ->
+                val source = ctx.source
+                val handle = entityEngine.play(Mobs.line(source.sender as Player, source.location))
+                ParticleEffect.builder()
+                    .context(ParticleContext(
+                        world = source.location.world,
+                        viewers = ViewerFilter.Radius(source.sender as Entity, 32.0),
+                        lod = LodPolicy.DistanceScale(source.sender as Entity, listOf(16.0 to 1.0, 32.0 to 0.6, 48.0 to 0.35)),
+                        batch = BatchPolicy.Auto,
+                    ))
+                    .origin(handle.entity)
+                    .shape(Shapes.circle(2.0, 96))
+                    .transform(Transform(
+                        translate = {_, _, _ -> Vector(0, 0, 0)},
+                        scale = {_, _, _ -> Vector(1, 1, 1)},
+                        rotate = {_, _ -> Vector(0, 0, 0)},
+                    ))
+                    .particle(ParticleParams(
+                        type = Particle.DUST,
+                        count = 1,
+                        color = Color.fromRGB(255, 80, 80),
+                        size = 1.5f,
+                    ))
+                    .timeline(Timeline(durationTicks = 40, easing = Easings.linear, loop = true))
+                    .build()
+                return@executes Command.SINGLE_SUCCESS
+            }
         )
         .build()
 
     override fun onPreDisable() {
         super.onPreDisable()
-        engine.cancelAll()
+        particleEngine.cancelAll()
+        entityEngine.cancelAll()
     }
 }
