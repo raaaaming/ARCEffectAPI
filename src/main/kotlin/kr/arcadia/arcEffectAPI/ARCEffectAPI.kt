@@ -1,6 +1,7 @@
 package kr.arcadia.arcEffectAPI
 
 import com.mojang.brigadier.Command
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.tree.LiteralCommandNode
@@ -137,41 +138,16 @@ class ARCEffectAPI : ARCCoreBukkitPlugin(), Listener {
                     return@executes Command.SINGLE_SUCCESS
                 }
             )
-        ).then(Commands.literal("sin")
-            .executes { ctx ->
-                val sender = ctx.source.sender
-                (0..360).forEach { logger.info("${sin(Math.toRadians(it.toDouble()))}") }
-                return@executes Command.SINGLE_SUCCESS
-            }
-        ).then(Commands.literal("summon")
+        ).then(Commands.literal("summon").then(Commands.argument("amount", IntegerArgumentType.integer(1, 600))
             .executes { ctx ->
                 val source = ctx.source
-                val handle = entityEngine.play(Mobs.line(source.sender as Player, source.location))
-                ParticleEffect.builder()
-                    .context(ParticleContext(
-                        world = source.location.world,
-                        viewers = ViewerFilter.Radius(source.sender as Entity, 32.0),
-                        lod = LodPolicy.DistanceScale(source.sender as Entity, listOf(16.0 to 1.0, 32.0 to 0.6, 48.0 to 0.35)),
-                        batch = BatchPolicy.Auto,
-                    ))
-                    .origin(handle.entity)
-                    .shape(Shapes.circle(2.0, 96))
-                    .transform(Transform(
-                        translate = {_, _, _ -> Vector(0, 0, 0)},
-                        scale = {_, _, _ -> Vector(1, 1, 1)},
-                        rotate = {_, _ -> Vector(0, 0, 0)},
-                    ))
-                    .particle(ParticleParams(
-                        type = Particle.DUST,
-                        count = 1,
-                        color = Color.fromRGB(255, 80, 80),
-                        size = 1.5f,
-                    ))
-                    .timeline(Timeline(durationTicks = 40, easing = Easings.linear, loop = true))
-                    .build()
+                val amount = ctx.getArgument("amount", Int::class.java)
+                repeat(amount) {
+                    entityEngine.play(Mobs.line(source.sender as Player, source.location))
+                }
                 return@executes Command.SINGLE_SUCCESS
             }
-        )
+        ))
         .build()
 
     override fun onPreDisable() {

@@ -25,7 +25,7 @@ fun Vector.relativeByYaw(yaw: Float) : Vector {
         forward.x * this.x + right.x * this.z + up.x * this.y,
         forward.y * this.x + right.y * this.z + up.y * this.y,
         forward.z * this.x + right.z * this.z + up.z * this.y
-    ).normalize()
+    )
 }
 
 fun Location.moveRelative(move: Vector): Location {

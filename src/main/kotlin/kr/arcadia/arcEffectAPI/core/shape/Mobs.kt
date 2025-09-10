@@ -24,7 +24,7 @@ object Mobs {
         .origin(start)
         .offset(Vector(1.0, 0.0, 0.0))
         .transform(Transform(
-            translate = {x, _, _ -> Vector(1.0, 0.0, 0.0)},
+            translate = {x, _, _ -> Vector(x, 0.0, 0.0)},
             scale = {_, _, _ -> Vector(1, 1, 1)},
             rotate = {_, _ -> Vector(0, 0, 0)},
         ))
