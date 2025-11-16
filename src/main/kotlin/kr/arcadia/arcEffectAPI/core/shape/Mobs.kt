@@ -6,6 +6,7 @@ import kr.arcadia.arcEffectAPI.core.animation.Transform
 import kr.arcadia.arcEffectAPI.core.effect.EntityEffect
 import kr.arcadia.arcEffectAPI.core.entity.EntityContext
 import kr.arcadia.arcEffectAPI.core.entity.EntityParams
+import kr.arcadia.arcEffectAPI.core.entity.Me4Spec
 import org.bukkit.Location
 import org.bukkit.craftbukkit.entity.CraftEntity
 import org.bukkit.damage.DamageSource
@@ -39,8 +40,12 @@ object Mobs {
             rigidBody = true,
             speed = 1.0,
             hitbox = {t -> 0.5},
-            attack = {c, _, t -> (t as LivingEntity).damage(20.0, DamageSource.builder(DamageType.PLAYER_ATTACK).withCausingEntity(c).withDirectEntity(c).withDamageLocation(c.location).build())},
+            attack = {c, e, t ->
+                (t as LivingEntity).damage(20.0, DamageSource.builder(DamageType.PLAYER_ATTACK).withCausingEntity(c).withDirectEntity(c).withDamageLocation(c.location).build())
+                e.remove()
+                     },
             extra = {_, _, _ ->},
+            me4 = Me4Spec("viperwolf")
         ))
         .build()
 }

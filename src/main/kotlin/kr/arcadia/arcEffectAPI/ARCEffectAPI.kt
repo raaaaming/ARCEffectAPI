@@ -138,7 +138,7 @@ class ARCEffectAPI : ARCCoreBukkitPlugin(), Listener {
                     return@executes Command.SINGLE_SUCCESS
                 }
             )
-        ).then(Commands.literal("summon").then(Commands.argument("amount", IntegerArgumentType.integer(1, 600))
+        ).then(Commands.literal("summon").then(Commands.argument("amount", IntegerArgumentType.integer(1))
             .executes { ctx ->
                 val source = ctx.source
                 val amount = ctx.getArgument("amount", Int::class.java)
